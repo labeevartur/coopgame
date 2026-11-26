@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
   <style>
     :root {
@@ -28,7 +28,6 @@
       --shadow-glow: 0 12px 35px rgba(255, 46, 147, 0.25);
     }
 
-    /* Тема 2: Золотой корпоратив */
     body[data-theme="gold"] {
       --bg-1: #120e0a;
       --bg-2: #2a1d10;
@@ -42,7 +41,6 @@
       --shadow-glow: 0 12px 35px rgba(245, 185, 66, 0.28);
     }
 
-    /* Тема 3: Новогодний движ */
     body[data-theme="newyear"] {
       --bg-1: #071923;
       --bg-2: #0d324d;
@@ -103,7 +101,7 @@
     .hidden { display: none !important; }
 
     /* =========================================
-       ЭКРАН ПРОЕКТОРА (HOST)
+       ГЛАВНЫЙ ЭКРАН ПРОЕКТОРА (HOST)
        ========================================= */
     #host-view {
       position: relative;
@@ -119,7 +117,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 20px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
 
@@ -188,6 +186,11 @@
       animation: pulseDot 1.8s infinite;
     }
 
+    .live-dot.error {
+      background: #ef4444;
+      box-shadow: 0 0 12px #ef4444;
+    }
+
     @keyframes pulseDot {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.35); opacity: 0.65; }
@@ -230,54 +233,70 @@
       border-color: rgba(239, 68, 68, 0.7);
     }
 
-    .demo-banner {
-      background: rgba(255, 190, 11, 0.16);
-      border: 1px solid rgba(255, 190, 11, 0.45);
-      color: #ffe8a3;
-      padding: 10px 16px;
-      border-radius: 12px;
+    .error-banner {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.55);
+      color: #fecaca;
+      padding: 12px 16px;
+      border-radius: 14px;
       font-size: 14px;
+      line-height: 1.4;
       margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      word-break: break-word;
     }
 
-    .empty-stage {
+    /* Зона стены кружочков (всегда видна на главном экране) */
+    .wall-stage {
       flex: 1;
+      border-radius: 28px;
+      border: 1px dashed rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 24px 18px 120px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: center;
-      padding: 20px;
+    }
+
+    .wall-stage.has-items {
+      border-color: transparent;
+      background: transparent;
+      justify-content: flex-start;
+      padding-top: 8px;
     }
 
     .empty-card {
+      margin: 0 auto;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       backdrop-filter: blur(16px);
       border-radius: 32px;
-      padding: 40px 48px;
+      padding: 36px 44px;
       display: flex;
       align-items: center;
-      gap: 44px;
-      max-width: 920px;
+      gap: 40px;
+      max-width: 900px;
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
     }
 
     .qr-frame {
       background: #ffffff;
-      padding: 16px;
+      padding: 14px;
       border-radius: 22px;
       box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      min-width: 248px;
+      min-height: 248px;
+    }
+
+    .qr-frame img, .qr-frame canvas {
+      display: block;
     }
 
     .empty-info h2 {
-      font-size: clamp(26px, 2.8vw, 38px);
+      font-size: clamp(24px, 2.6vw, 36px);
       font-weight: 900;
       margin-bottom: 14px;
       line-height: 1.15;
@@ -288,7 +307,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      font-size: 18px;
+      font-size: 17px;
       color: var(--text-muted);
     }
 
@@ -318,7 +337,6 @@
       align-items: center;
       justify-content: center;
       gap: 28px;
-      padding: 12px 12px 110px;
     }
 
     .circle-item {
@@ -501,7 +519,7 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      background: rgba(15, 13, 32, 0.86);
+      background: rgba(15, 13, 32, 0.88);
       border: 1px solid var(--card-border);
       backdrop-filter: blur(14px);
       padding: 12px 16px 12px 12px;
@@ -521,6 +539,11 @@
       padding: 6px;
       border-radius: 12px;
       line-height: 0;
+      min-width: 94px;
+      min-height: 94px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .corner-qr-text strong {
@@ -536,9 +559,7 @@
       font-weight: 600;
     }
 
-    /* =========================================
-       МОДАЛЬНЫЕ ОКНА (SPOTLIGHT И FULLSCREEN QR)
-       ========================================= */
+    /* МОДАЛКИ */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -641,12 +662,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, transform 0.15s;
-    }
-
-    .spotlight-nav:hover {
-      background: rgba(255, 255, 255, 0.24);
-      transform: translateY(-50%) scale(1.08);
     }
 
     .spotlight-prev { left: 28px; }
@@ -668,10 +683,6 @@
       align-items: center;
       justify-content: center;
       z-index: 105;
-    }
-
-    .modal-close:hover {
-      background: rgba(255, 255, 255, 0.26);
     }
 
     .qr-fullscreen-box {
@@ -701,6 +712,11 @@
       padding: 24px;
       border-radius: 30px;
       box-shadow: 0 0 90px rgba(0, 229, 255, 0.28);
+      min-width: 368px;
+      min-height: 368px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* =========================================
@@ -805,7 +821,6 @@
       font-size: 16px;
       padding: 12px 14px;
       outline: none;
-      transition: border-color 0.2s;
     }
 
     .text-input:focus, .text-area:focus {
@@ -832,7 +847,6 @@
       border: 2px solid transparent;
       border-radius: 12px;
       cursor: pointer;
-      transition: transform 0.15s, border-color 0.15s, background 0.15s;
     }
 
     .mood-btn.selected {
@@ -921,7 +935,6 @@
       font-size: 13px;
       padding: 4px 12px;
       border-radius: 999px;
-      letter-spacing: 0.04em;
     }
 
     .camera-controls {
@@ -942,10 +955,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.15s;
     }
-
-    .rec-btn:active { transform: scale(0.94); }
 
     .rec-btn-inner {
       width: 100%;
@@ -959,7 +969,6 @@
       width: 52%;
       height: 52%;
       border-radius: 8px;
-      background: #ff2e63;
     }
 
     .round-icon-btn {
@@ -988,7 +997,6 @@
       background: var(--ring-grad);
       color: #0d0b1e;
       box-shadow: var(--shadow-glow);
-      transition: transform 0.15s, opacity 0.2s;
     }
 
     .action-btn:disabled {
@@ -1023,6 +1031,17 @@
       animation: popIn 0.5s ease;
     }
 
+    .guest-footer-link {
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .guest-footer-link a {
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 12px;
+      text-decoration: underline;
+    }
+
     .status-toast {
       position: fixed;
       bottom: 24px;
@@ -1032,17 +1051,19 @@
       background: #141226;
       border: 1px solid var(--accent-2);
       color: #fff;
-      padding: 12px 22px;
+      padding: 12px 20px;
       border-radius: 14px;
       font-weight: 700;
       font-size: 14px;
+      max-width: 92vw;
+      text-align: center;
       box-shadow: 0 12px 32px rgba(0,0,0,0.45);
       animation: popIn 0.25s ease;
     }
 
     @media (max-width: 768px) {
       #host-view { padding: 16px; }
-      .empty-card { flex-direction: column; text-align: center; padding: 28px 20px; gap: 24px; }
+      .empty-card { flex-direction: column; text-align: center; padding: 24px 18px; gap: 22px; }
       .corner-qr { right: 14px; bottom: 14px; padding: 8px 12px 8px 8px; }
       .spotlight-nav { display: none; }
     }
@@ -1057,52 +1078,48 @@
   </div>
 
   <!-- =========================================================
-       ЭКРАН ПРОЕКТОРА (HOST)
+       ГЛАВНЫЙ ЭКРАН ПРОЕКТОРА (HOST)
        ========================================================= -->
   <div id="host-view" class="hidden">
     <header class="host-header">
       <div class="brand-block">
-        <div id="event-title" class="event-title" contenteditable="true" spellcheck="false" title="Нажми, чтобы изменить название мероприятия">КОРПОРАТИВНЫЙ ЭФИР 🔥</div>
+        <div id="event-title" class="event-title" contenteditable="true" spellcheck="false" title="Нажми, чтобы изменить название">КОРПОРАТИВНЫЙ ЭФИР 🔥</div>
         <div id="event-subtitle" class="event-subtitle" contenteditable="true" spellcheck="false" title="Нажми, чтобы изменить подзаголовок">Сканируй QR-код — записывай кружочек и залетай на большой экран!</div>
       </div>
 
       <div class="host-controls">
         <div class="stat-pill">
-          <span class="live-dot"></span>
+          <span id="live-dot" class="live-dot"></span>
           <span id="feed-counter">В эфире: 0</span>
         </div>
-        <button class="ctrl-btn" id="btn-theme" title="Сменить стиль оформления">🎨 Стиль: Неон</button>
-        <button class="ctrl-btn primary" id="btn-open-qr" title="Горячая клавиша Q">📱 QR на весь экран</button>
-        <button class="ctrl-btn" id="btn-copy-link" title="Скопировать ссылку для гостей">🔗 Ссылка</button>
-        <button class="ctrl-btn danger" id="btn-clear-all" title="Удалить все кружочки перед новым мероприятием">🗑️ Очистить</button>
+        <button class="ctrl-btn" id="btn-theme">🎨 Стиль: Неон</button>
+        <button class="ctrl-btn primary" id="btn-open-qr" title="Клавиша Q">📱 QR на весь экран</button>
+        <button class="ctrl-btn" id="btn-refresh" title="Обновить ленту вручную">🔄 Обновить</button>
+        <button class="ctrl-btn" id="btn-copy-link">🔗 Ссылка</button>
+        <button class="ctrl-btn danger" id="btn-clear-all">🗑️ Очистить</button>
       </div>
     </header>
 
-    <div id="demo-banner" class="demo-banner hidden">
-      <span>⚠️ <strong>Демо-режим:</strong> вставь <code>SUPABASE_URL</code> и <code>SUPABASE_KEY</code> в <code>index.html</code> для синхронизации телефонов и проектора.</span>
-      <button class="ctrl-btn" id="btn-add-demo">➕ Тест-открытка</button>
-    </div>
+    <div id="host-error" class="error-banner hidden"></div>
 
-    <!-- Пустое состояние -->
-    <section id="empty-stage" class="empty-stage">
-      <div class="empty-card">
+    <!-- Главная зона отображения кружочков и тостов -->
+    <section id="wall-stage" class="wall-stage">
+      <div id="empty-card" class="empty-card">
         <div class="qr-frame" id="qr-empty"></div>
         <div class="empty-info">
           <h2>Кто первый влетит в эфир? 🚀</h2>
           <ul class="empty-steps">
             <li><span class="step-badge">1</span> Наведи камеру телефона на QR-код</li>
             <li><span class="step-badge">2</span> Запиши весёлый кружочек или тост</li>
-            <li><span class="step-badge">3</span> Лови себя на большом экране!</li>
+            <li><span class="step-badge">3</span> Кружочки сразу появятся здесь!</li>
           </ul>
         </div>
       </div>
+
+      <main id="feed-wall" class="feed-wall"></main>
     </section>
 
-    <!-- Стена кружочков и открыток -->
-    <main id="feed-wall" class="feed-wall hidden"></main>
-
-    <!-- Угловой мини-QR -->
-    <div id="corner-qr" class="corner-qr hidden" title="Нажми, чтобы открыть QR на весь экран">
+    <div id="corner-qr" class="corner-qr hidden" title="Открыть QR на весь экран">
       <div id="qr-mini" class="corner-qr-box"></div>
       <div class="corner-qr-text">
         <strong>ЗАЛЕТАЙ В ЭФИР!</strong>
@@ -1111,7 +1128,7 @@
     </div>
   </div>
 
-  <!-- Модалка полноэкранного QR -->
+  <!-- Полноэкранный QR -->
   <div id="qr-modal" class="modal-backdrop hidden">
     <button class="modal-close" id="btn-close-qr">×</button>
     <div class="qr-fullscreen-box">
@@ -1121,7 +1138,7 @@
     </div>
   </div>
 
-  <!-- Модалка Spotlight (увеличенный просмотр со звуком) -->
+  <!-- Spotlight -->
   <div id="spotlight-modal" class="modal-backdrop hidden">
     <button class="modal-close" id="btn-close-spotlight">×</button>
     <button class="spotlight-nav spotlight-prev" id="btn-spot-prev">‹</button>
@@ -1142,8 +1159,10 @@
   <div id="guest-view" class="hidden">
     <header class="guest-header">
       <div class="guest-badge">LIVE НА БОЛЬШОЙ ЭКРАН</div>
-      <h1 id="guest-title">Корпоративный эфир 🔥</h1>
+      <h1>Корпоративный эфир 🔥</h1>
     </header>
+
+    <div id="guest-error" class="error-banner hidden"></div>
 
     <div id="guest-form-wrapper">
       <div class="guest-tabs">
@@ -1151,7 +1170,6 @@
         <button class="tab-btn" id="tab-text">🥂 Тост / Привет</button>
       </div>
 
-      <!-- Общие поля: имя и настроение -->
       <div class="guest-panel" style="margin-top: 12px;">
         <div class="input-group">
           <label class="input-label" for="guest-name">Как тебя подписать?</label>
@@ -1160,7 +1178,7 @@
 
         <div class="input-group">
           <label class="input-label">Вайб сообщения</label>
-          <div class="mood-row" id="mood-row">
+          <div class="mood-row">
             <button type="button" class="mood-btn selected" data-mood="🔥">🔥</button>
             <button type="button" class="mood-btn" data-mood="🥂">🥂</button>
             <button type="button" class="mood-btn" data-mood="😎">😎</button>
@@ -1171,7 +1189,6 @@
         </div>
       </div>
 
-      <!-- Вкладка 1: Запись видеокружочка -->
       <div id="panel-video" class="guest-panel" style="margin-top: 12px;">
         <div class="camera-stage">
           <svg class="progress-svg" viewBox="0 0 120 120">
@@ -1201,7 +1218,7 @@
 
         <div id="record-controls" class="camera-controls hidden">
           <button type="button" class="round-icon-btn" id="btn-flip-cam" title="Переключить камеру">🔄</button>
-          <button type="button" class="rec-btn" id="btn-record" title="Начать / остановить запись">
+          <button type="button" class="rec-btn" id="btn-record" title="Запись">
             <span class="rec-btn-inner"></span>
           </button>
           <div style="width: 48px;"></div>
@@ -1213,7 +1230,6 @@
         </div>
       </div>
 
-      <!-- Вкладка 2: Текстовый тост -->
       <div id="panel-text" class="guest-panel hidden" style="margin-top: 12px;">
         <div class="input-group">
           <label class="input-label" for="guest-message">Твой тост, привет отделу или шутка</label>
@@ -1223,19 +1239,19 @@
       </div>
     </div>
 
-    <!-- Экран успешной отправки -->
     <div id="guest-success" class="guest-panel success-screen hidden">
       <div class="success-emoji">🎉</div>
       <h2>ТЫ В ЭФИРЕ!</h2>
       <p style="color: var(--text-muted); font-size: 16px;">Смотри на большой экран — твоё послание уже там!</p>
       <button type="button" class="action-btn" id="btn-send-more">➕ Записать ещё</button>
     </div>
+
+    <div class="guest-footer-link">
+      <a id="link-to-host" href="#">📺 Открыть главный экран проектора</a>
+    </div>
   </div>
 
   <script>
-    // =========================================================================
-    // 1. НАСТРОЙКИ SUPABASE
-    // =========================================================================
     const CONFIG = {
       SUPABASE_URL: 'https://xhytzayxiniftcowwdan.supabase.co',
       SUPABASE_KEY: 'sb_publishable_qRk-96Gkh8JY40a6bLE2eQ_wOj36xTh',
@@ -1250,15 +1266,10 @@
       { id: 'newyear', label: '🎨 Стиль: Новый год' }
     ];
 
-    // =========================================================================
-    // 2. ИНИЦИАЛИЗАЦИЯ SUPABASE И СОСТОЯНИЯ
-    // =========================================================================
-    const isDemo = !CONFIG.SUPABASE_URL.startsWith('http') || CONFIG.SUPABASE_URL.includes('ВСТАВЬТЕ');
-    const sb = isDemo ? null : window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-
     const urlParams = new URLSearchParams(window.location.search);
     const isGuestMode = urlParams.get('mode') === 'guest';
 
+    let sb = null;
     let feedItems = [];
     let currentSpotlightIndex = -1;
     let currentThemeIdx = 0;
@@ -1272,7 +1283,7 @@
         .replace(/'/g, '&#39;');
     }
 
-    function showToast(msg, duration = 2800) {
+    function showToast(msg, duration = 3500) {
       const existing = document.querySelector('.status-toast');
       if (existing) existing.remove();
       const el = document.createElement('div');
@@ -1282,9 +1293,52 @@
       setTimeout(() => el.remove(), duration);
     }
 
+    function showBannerError(elementId, msg) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      if (!msg) {
+        el.classList.add('hidden');
+        el.textContent = '';
+      } else {
+        el.textContent = msg;
+        el.classList.remove('hidden');
+      }
+    }
+
+    function getHostUrl() {
+      return window.location.origin + window.location.pathname;
+    }
+
     function getGuestUrl() {
-      const cleanUrl = window.location.origin + window.location.pathname;
-      return `${cleanUrl}?mode=guest`;
+      return `${getHostUrl()}?mode=guest`;
+    }
+
+    // Безопасная отрисовка QR с запасным вариантом через картинку (не падает без CDN)
+    function renderQrSafe(containerId, text, size) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = '';
+
+      try {
+        if (typeof window.QRCode === 'function') {
+          new window.QRCode(el, {
+            text: text,
+            width: size,
+            height: size,
+            correctLevel: window.QRCode.CorrectLevel ? window.QRCode.CorrectLevel.M : 0
+          });
+          return;
+        }
+      } catch (e) {
+        console.warn('QRCode lib fallback:', e);
+      }
+
+      const img = document.createElement('img');
+      img.width = size;
+      img.height = size;
+      img.alt = 'QR-код';
+      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=4&data=${encodeURIComponent(text)}`;
+      el.appendChild(img);
     }
 
     function applyTheme(themeId) {
@@ -1297,10 +1351,20 @@
       if (btn) btn.textContent = theme.label;
     }
 
+    function initSupabase() {
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        const msg = 'Не удалось загрузить библиотеку Supabase (проверь интернет или доступ к jsdelivr).';
+        showBannerError(isGuestMode ? 'guest-error' : 'host-error', msg);
+        return false;
+      }
+      sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+      return true;
+    }
+
     applyTheme(localStorage.getItem('corp_live_theme') || 'neon');
 
     // =========================================================================
-    // 3. РЕЖИМ ПРОЕКТОРА (HOST)
+    // ГЛАВНЫЙ ЭКРАН ПРОЕКТОРА (HOST)
     // =========================================================================
     function initHost() {
       document.getElementById('host-view').classList.remove('hidden');
@@ -1320,9 +1384,9 @@
       });
 
       const guestUrl = getGuestUrl();
-      new QRCode(document.getElementById('qr-empty'), { text: guestUrl, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
-      new QRCode(document.getElementById('qr-mini'), { text: guestUrl, width: 82, height: 82, correctLevel: QRCode.CorrectLevel.M });
-      new QRCode(document.getElementById('qr-huge'), { text: guestUrl, width: 340, height: 340, correctLevel: QRCode.CorrectLevel.M });
+      renderQrSafe('qr-empty', guestUrl, 220);
+      renderQrSafe('qr-mini', guestUrl, 82);
+      renderQrSafe('qr-huge', guestUrl, 320);
 
       document.getElementById('btn-theme').addEventListener('click', () => {
         const next = THEMES[(currentThemeIdx + 1) % THEMES.length];
@@ -1338,6 +1402,7 @@
       document.getElementById('btn-close-qr').addEventListener('click', closeQr);
       qrModal.addEventListener('click', (e) => { if (e.target === qrModal) closeQr(); });
 
+      document.getElementById('btn-refresh').addEventListener('click', () => syncFeedFromServer(true));
       document.getElementById('btn-copy-link').addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(guestUrl);
@@ -1375,59 +1440,70 @@
         }
       });
 
-      if (isDemo) {
-        document.getElementById('demo-banner').classList.remove('hidden');
-        document.getElementById('btn-add-demo').addEventListener('click', addDemoCard);
-        addDemoCard();
-      } else {
-        loadInitialFeed();
-        subscribeRealtime();
-      }
+      if (!initSupabase()) return;
+
+      syncFeedFromServer(false);
+      subscribeRealtime();
+      // Страховочная автосинхронизация каждые 4 сек (без перезагрузки существующих видео)
+      setInterval(() => syncFeedFromServer(false), 4000);
     }
 
-    function addDemoCard() {
-      const samples = [
-        { guest_name: '🔥 Отдел продаж', message: 'За лучший квартал и чтобы CRM сама всё заполняла! 🥂' },
-        { guest_name: '😎 Айтишники', message: 'Мы тоже умеем отдыхать, просто не перезагружайте нас сегодня! 🚀' },
-        { guest_name: '💃 Бухгалтерия', message: 'Баланс сошёлся, танцпол ждёт! Всем огненного вечера! 🎉' }
-      ];
-      const pick = samples[Math.floor(Math.random() * samples.length)];
-      addItemToState({
-        id: 'demo-' + Date.now(),
-        type: 'text',
-        guest_name: pick.guest_name,
-        message: pick.message,
-        video_url: null
-      }, true);
-    }
-
-    async function loadInitialFeed() {
+    async function syncFeedFromServer(notify = false) {
+      if (!sb) return;
       const { data, error } = await sb
         .from(CONFIG.TABLE_NAME)
         .select('*')
         .order('created_at', { ascending: false });
 
+      const dot = document.getElementById('live-dot');
+
       if (error) {
-        console.error('Load error:', error);
-        showToast('Ошибка загрузки базы Supabase');
+        console.error('Supabase load error:', error);
+        dot.classList.add('error');
+        showBannerError('host-error', `Ошибка подключения к таблице "${CONFIG.TABLE_NAME}": ${error.message}. Убедись, что SQL-скрипт выполнен в Supabase.`);
         return;
       }
 
-      feedItems = [];
-      document.getElementById('feed-wall').innerHTML = '';
-      (data || []).forEach(item => addItemToState(item, false));
+      dot.classList.remove('error');
+      showBannerError('host-error', '');
+
+      const rows = data || [];
+      const serverIds = new Set(rows.map(r => String(r.id)));
+
+      // Удаляем исчезнувшие с сервера записи
+      for (let i = feedItems.length - 1; i >= 0; i--) {
+        if (!serverIds.has(String(feedItems[i].id))) {
+          removeItemFromState(feedItems[i].id);
+        }
+      }
+
+      // Добавляем новые записи без перерисовки уже играющих кружочков
+      const isInitial = feedItems.length === 0;
+      if (isInitial) {
+        rows.forEach(item => addItemToState(item, false));
+      } else {
+        for (let i = rows.length - 1; i >= 0; i--) {
+          addItemToState(rows[i], true);
+        }
+      }
+
       syncHostLayout();
+      if (notify) showToast(`Обновлено! В эфире: ${feedItems.length}`);
     }
 
     function subscribeRealtime() {
-      sb.channel('corp-live-wall')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: CONFIG.TABLE_NAME }, (payload) => {
-          addItemToState(payload.new, true);
-        })
-        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: CONFIG.TABLE_NAME }, (payload) => {
-          removeItemFromState(payload.old.id);
-        })
-        .subscribe();
+      try {
+        sb.channel('corp-live-wall')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: CONFIG.TABLE_NAME }, (payload) => {
+            addItemToState(payload.new, true);
+          })
+          .on('postgres_changes', { event: 'DELETE', schema: 'public', table: CONFIG.TABLE_NAME }, (payload) => {
+            removeItemFromState(payload.old.id);
+          })
+          .subscribe();
+      } catch (e) {
+        console.warn('Realtime fallback to polling:', e);
+      }
     }
 
     function addItemToState(item, prepend = true) {
@@ -1470,17 +1546,17 @@
     function syncHostLayout() {
       const count = feedItems.length;
       document.getElementById('feed-counter').textContent = `В эфире: ${count}`;
-      const empty = document.getElementById('empty-stage');
-      const wall = document.getElementById('feed-wall');
+      const stage = document.getElementById('wall-stage');
+      const emptyCard = document.getElementById('empty-card');
       const cornerQr = document.getElementById('corner-qr');
 
       if (count === 0) {
-        empty.classList.remove('hidden');
-        wall.classList.add('hidden');
+        stage.classList.remove('has-items');
+        emptyCard.classList.remove('hidden');
         cornerQr.classList.add('hidden');
       } else {
-        empty.classList.add('hidden');
-        wall.classList.remove('hidden');
+        stage.classList.add('has-items');
+        emptyCard.classList.add('hidden');
         cornerQr.classList.remove('hidden');
       }
     }
@@ -1561,8 +1637,7 @@
       if (!item) return;
 
       const content = document.getElementById('spotlight-content');
-      const authorEl = document.getElementById('spotlight-author');
-      authorEl.textContent = item.guest_name || 'Гость вечера 🎉';
+      document.getElementById('spotlight-author').textContent = item.guest_name || 'Гость вечера 🎉';
       content.innerHTML = '';
 
       if (item.type === 'video' && item.video_url) {
@@ -1602,8 +1677,7 @@
     }
 
     function closeSpotlight() {
-      const modal = document.getElementById('spotlight-modal');
-      modal.classList.add('hidden');
+      document.getElementById('spotlight-modal').classList.add('hidden');
       document.getElementById('spotlight-content').innerHTML = '';
       currentSpotlightIndex = -1;
     }
@@ -1618,12 +1692,6 @@
 
     async function deleteSingleItem(item) {
       if (!confirm('Удалить эту запись с экрана?')) return;
-
-      if (isDemo) {
-        removeItemFromState(item.id);
-        return;
-      }
-
       try {
         const filePath = extractStoragePath(item.video_url);
         if (filePath) {
@@ -1635,7 +1703,7 @@
         showToast('Запись удалена');
       } catch (err) {
         console.error(err);
-        showToast('Не удалось удалить запись');
+        showToast(`Ошибка удаления: ${err.message || err}`);
       }
     }
 
@@ -1643,18 +1711,8 @@
       if (!confirm('Очистить ВСЕ кружочки и тосты? Это действие нельзя отменить.')) return;
       if (!confirm('Точно очищаем весь эфир под новое мероприятие?')) return;
 
-      if (isDemo) {
-        feedItems = [];
-        document.getElementById('feed-wall').innerHTML = '';
-        closeSpotlight();
-        syncHostLayout();
-        showToast('Экран очищен');
-        return;
-      }
-
       try {
         showToast('Очищаем базу и хранилище...');
-
         const { data: files } = await sb.storage.from(CONFIG.BUCKET_NAME).list('', { limit: 1000 });
         if (files && files.length > 0) {
           const paths = files.filter(f => f.name && f.name !== '.emptyFolderPlaceholder').map(f => f.name);
@@ -1670,15 +1728,15 @@
         document.getElementById('feed-wall').innerHTML = '';
         closeSpotlight();
         syncHostLayout();
-        showToast('Эфир полностью очищен! Готово к новому событию 🎉');
+        showToast('Эфир полностью очищен! 🎉');
       } catch (err) {
         console.error(err);
-        showToast('Ошибка очистки — проверь политики DELETE в Supabase');
+        showToast(`Ошибка очистки: ${err.message || err}`, 5000);
       }
     }
 
     // =========================================================================
-    // 4. МОБИЛЬНЫЙ РЕЖИМ ГОСТЯ (GUEST)
+    // МОБИЛЬНЫЙ РЕЖИМ ГОСТЯ (GUEST)
     // =========================================================================
     let mediaStream = null;
     let mediaRecorder = null;
@@ -1692,6 +1750,9 @@
 
     function initGuest() {
       document.getElementById('guest-view').classList.remove('hidden');
+      document.getElementById('link-to-host').href = getHostUrl();
+
+      initSupabase();
 
       const nameInput = document.getElementById('guest-name');
       nameInput.value = localStorage.getItem('corp_guest_name') || '';
@@ -1740,6 +1801,7 @@
         document.getElementById('guest-success').classList.add('hidden');
         document.getElementById('guest-form-wrapper').classList.remove('hidden');
         document.getElementById('guest-message').value = '';
+        showBannerError('guest-error', '');
         resetVideoRecorder();
       });
     }
@@ -1767,6 +1829,7 @@
     async function startCamera() {
       try {
         stopCameraStream();
+        showBannerError('guest-error', '');
 
         mediaStream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -1792,7 +1855,7 @@
         document.getElementById('record-controls').classList.remove('hidden');
       } catch (err) {
         console.error(err);
-        showToast('Нет доступа к камере/микрофону. Проверь разрешения и HTTPS.', 4000);
+        showBannerError('guest-error', `Нет доступа к камере: ${err.message || err}. Открой ссылку в Chrome или Safari.`);
       }
     }
 
@@ -1813,12 +1876,13 @@
 
     function startRecording() {
       if (!mediaStream) return;
+      showBannerError('guest-error', '');
 
       recordedChunks = [];
       recordedBlob = null;
 
       const mimeType = pickBestMimeType();
-      const options = { videoBitsPerSecond: 1000000 };
+      const options = { videoBitsPerSecond: 900000 };
       if (mimeType) options.mimeType = mimeType;
 
       try {
@@ -1827,7 +1891,9 @@
         mediaRecorder = new MediaRecorder(mediaStream);
       }
 
-      recordedMime = mediaRecorder.mimeType || mimeType || 'video/webm';
+      const rawMime = mediaRecorder.mimeType || mimeType || 'video/webm';
+      // Чистый MIME без ";codecs=...", чтобы Supabase Storage принимал файл без ошибок
+      recordedMime = rawMime.split(';')[0].trim() || 'video/webm';
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) recordedChunks.push(e.data);
@@ -1915,22 +1981,21 @@
     }
 
     async function uploadVideoCircle() {
-      if (!recordedBlob || recordedBlob.size < 1000) {
-        showToast('Кружочек получился слишком коротким, попробуй ещё раз');
+      if (!sb) {
+        showBannerError('guest-error', 'Нет соединения с Supabase.');
+        return;
+      }
+      if (!recordedBlob || recordedBlob.size < 200) {
+        showToast('Кружочек получился пустым, запиши хотя бы 2 секунды');
         return;
       }
 
       const btn = document.getElementById('btn-send-video');
       btn.disabled = true;
-      btn.textContent = '⏳ Отправляем...';
+      btn.textContent = '⏳ Загружаем видео...';
+      showBannerError('guest-error', '');
 
       try {
-        if (isDemo) {
-          await new Promise(r => setTimeout(r, 700));
-          showGuestSuccess();
-          return;
-        }
-
         const ext = recordedMime.includes('mp4') ? 'mp4' : 'webm';
         const fileName = `circle_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${ext}`;
 
@@ -1939,11 +2004,14 @@
           .upload(fileName, recordedBlob, {
             contentType: recordedMime,
             cacheControl: '3600',
-            upsert: false
+            upsert: true
           });
 
-        if (uploadErr) throw uploadErr;
+        if (uploadErr) {
+          throw new Error(`Storage (${CONFIG.BUCKET_NAME}): ${uploadErr.message}`);
+        }
 
+        btn.textContent = '⏳ Публикуем на экран...';
         const { data: pubData } = sb.storage.from(CONFIG.BUCKET_NAME).getPublicUrl(fileName);
         const publicUrl = pubData.publicUrl;
 
@@ -1954,12 +2022,16 @@
           message: ''
         }]);
 
-        if (dbErr) throw dbErr;
+        if (dbErr) {
+          throw new Error(`Таблица (${CONFIG.TABLE_NAME}): ${dbErr.message}`);
+        }
 
         showGuestSuccess();
       } catch (err) {
-        console.error(err);
-        showToast('Ошибка отправки. Попробуй ещё раз!', 3500);
+        console.error('Upload video error:', err);
+        const msg = err && err.message ? err.message : String(err);
+        showBannerError('guest-error', `Ошибка отправки: ${msg}`);
+        showToast('Не удалось отправить — причина указана сверху', 4000);
       } finally {
         btn.disabled = false;
         btn.textContent = '🚀 На экран!';
@@ -1967,6 +2039,11 @@
     }
 
     async function sendTextWish() {
+      if (!sb) {
+        showBannerError('guest-error', 'Нет соединения с Supabase.');
+        return;
+      }
+
       const msgEl = document.getElementById('guest-message');
       const message = msgEl.value.trim();
 
@@ -1979,14 +2056,9 @@
       const btn = document.getElementById('btn-send-text');
       btn.disabled = true;
       btn.textContent = '⏳ Отправляем...';
+      showBannerError('guest-error', '');
 
       try {
-        if (isDemo) {
-          await new Promise(r => setTimeout(r, 500));
-          showGuestSuccess();
-          return;
-        }
-
         const { error } = await sb.from(CONFIG.TABLE_NAME).insert([{
           type: 'text',
           video_url: null,
@@ -1994,11 +2066,13 @@
           message: message
         }]);
 
-        if (error) throw error;
+        if (error) throw new Error(`Таблица (${CONFIG.TABLE_NAME}): ${error.message}`);
         showGuestSuccess();
       } catch (err) {
-        console.error(err);
-        showToast('Ошибка отправки. Попробуй ещё раз!', 3500);
+        console.error('Send text error:', err);
+        const msg = err && err.message ? err.message : String(err);
+        showBannerError('guest-error', `Ошибка отправки: ${msg}`);
+        showToast('Не удалось отправить — причина указана сверху', 4000);
       } finally {
         btn.disabled = false;
         btn.textContent = '🚀 Отправить на экран!';
