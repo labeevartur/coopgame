@@ -108,7 +108,20 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 90;
+      z-index: 95;
+    }
+
+    /* Скрытый контейнер декодеров видео (2x2px чтобы браузер не усыплял кадры) */
+    #video-decoder-pool {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 4px;
+      opacity: 0.01;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -1;
     }
 
     .hidden { display: none !important; }
@@ -135,6 +148,11 @@
       padding: 18px 28px 12px;
       flex-wrap: wrap;
       background: linear-gradient(to bottom, rgba(10, 8, 24, 0.78), transparent);
+      pointer-events: none;
+    }
+
+    .brand-block, .host-controls {
+      pointer-events: auto;
     }
 
     .brand-block {
@@ -266,13 +284,13 @@
     #physics-arena {
       position: fixed;
       inset: 0;
-      z-index: 10;
+      z-index: 15;
       overflow: hidden;
     }
 
     .empty-stage {
       position: relative;
-      z-index: 15;
+      z-index: 20;
       flex: 1;
       display: flex;
       align-items: center;
@@ -350,11 +368,18 @@
       will-change: transform;
       touch-action: none;
       cursor: grab;
+      user-select: none;
     }
 
     .phys-body.dragging {
       cursor: grabbing;
-      z-index: 50 !important;
+      z-index: 60 !important;
+    }
+
+    .phys-body.dragging .circle-ring,
+    .phys-body.dragging .text-bubble {
+      transform: scale(1.05);
+      box-shadow: 0 20px 50px rgba(0, 229, 255, 0.45);
     }
 
     .phys-body.roulette-active .circle-ring,
@@ -363,7 +388,6 @@
       transform: scale(1.08);
     }
 
-    /* Видео-кружочек */
     .circle-ring {
       width: 100%;
       height: 100%;
@@ -371,7 +395,8 @@
       border-radius: 50%;
       background: var(--ring-grad);
       box-shadow: var(--shadow-glow);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      pointer-events: none;
     }
 
     .circle-mask {
@@ -379,39 +404,17 @@
       height: 100%;
       border-radius: 50%;
       overflow: hidden;
-      background: radial-gradient(circle at 30% 30%, #2a1b54, #120d26);
+      background: #1a1238;
       position: relative;
-      transform: translateZ(0);
+      pointer-events: none;
     }
 
-    .circle-mask video {
+    .circle-canvas {
       width: 100%;
       height: 100%;
-      object-fit: cover;
       display: block;
+      border-radius: 50%;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.35s ease;
-    }
-
-    .circle-mask video.ready {
-      opacity: 1;
-    }
-
-    .circle-loader {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      animation: spinSlow 2s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes spinSlow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
     }
 
     .circle-sound-hint {
@@ -419,7 +422,7 @@
       top: 14px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.62);
+      background: rgba(0, 0, 0, 0.65);
       color: #fff;
       font-size: 11px;
       font-weight: 700;
@@ -456,7 +459,6 @@
       z-index: 3;
     }
 
-    /* Текстовый баббл-тост (круглый/пухлый для гармоничных столкновений) */
     .text-bubble {
       width: 100%;
       height: 100%;
@@ -471,7 +473,8 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      pointer-events: none;
     }
 
     .text-quote {
@@ -505,6 +508,7 @@
       opacity: 0;
       transition: opacity 0.2s, background 0.2s, transform 0.15s;
       z-index: 6;
+      pointer-events: auto;
     }
 
     .phys-body:hover .delete-item-btn {
@@ -516,7 +520,6 @@
       transform: scale(1.12);
     }
 
-    /* Угловой QR */
     .corner-qr {
       position: fixed;
       right: 22px;
@@ -565,7 +568,6 @@
       font-weight: 600;
     }
 
-    /* Взлетающие живые реакции */
     .floating-reaction {
       position: fixed;
       bottom: 20px;
@@ -636,15 +638,15 @@
       height: 100%;
       border-radius: 50%;
       overflow: hidden;
-      background: #000;
-      transform: translateZ(0);
+      background: #1a1238;
+      position: relative;
     }
 
-    .spotlight-circle-mask video {
+    .spotlight-canvas {
       width: 100%;
       height: 100%;
-      object-fit: cover;
       display: block;
+      border-radius: 50%;
     }
 
     .spotlight-card {
@@ -1051,7 +1053,6 @@
       gap: 10px;
     }
 
-    /* Панель живых реакций у гостя */
     .reaction-bar {
       display: flex;
       flex-direction: column;
@@ -1146,6 +1147,9 @@
     <div class="orb orb-3"></div>
   </div>
 
+  <!-- Скрытый пул декодеров видео -->
+  <div id="video-decoder-pool"></div>
+
   <!-- Холст для конфетти -->
   <canvas id="fx-canvas"></canvas>
 
@@ -1156,7 +1160,7 @@
     <header id="host-header" class="host-header">
       <div class="brand-block">
         <div id="event-title" class="event-title" contenteditable="true" spellcheck="false" title="Кликни, чтобы изменить название">КОРПОРАТИВНЫЙ ЭФИР 🔥</div>
-        <div id="event-subtitle" class="event-subtitle" contenteditable="true" spellcheck="false" title="Кликни, чтобы изменить подпись">Сканируй QR-код — записывай кружочек, толкай шары мышкой и жми для звука!</div>
+        <div id="event-subtitle" class="event-subtitle" contenteditable="true" spellcheck="false" title="Кликни, чтобы изменить подпись">Хватай и кидай кружочки мышкой, сталкивай друг с другом или нажми для звука!</div>
       </div>
 
       <div class="host-controls">
@@ -1322,7 +1326,6 @@
       <button type="button" class="action-btn" id="btn-send-more">➕ Записать ещё</button>
     </div>
 
-    <!-- Живые реакции прямо на проектор -->
     <div class="guest-panel">
       <div class="reaction-bar">
         <span>Запустить реакцию на большой экран:</span>
@@ -1363,7 +1366,9 @@
     let reactionChannel = null;
     let feedItems = [];
     let physBodies = [];
-    let videoBlobCache = new Map(); // Кэш видео в RAM для бесшовного повтора без чёрных кадров
+    let videoBlobCache = new Map();
+    let activeDrag = null;
+    let activeSpotlightVideoPlayer = null;
     let currentSpotlightIndex = -1;
     let currentThemeIdx = 0;
     let zIndexCounter = 20;
@@ -1458,7 +1463,7 @@
     applyTheme(localStorage.getItem('corp_live_theme') || 'neon');
 
     // =========================================================================
-    // САЛЮТ ИЗ КОНФЕТТИ (Лёгкий 2D Canvas)
+    // САЛЮТ ИЗ КОНФЕТТИ
     // =========================================================================
     const confettiParticles = [];
     let confettiAnimating = false;
@@ -1501,7 +1506,7 @@
         const p = confettiParticles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.28; // гравитация
+        p.vy += 0.28;
         p.vx *= 0.985;
         p.rot += p.vRot;
         p.life -= 0.013;
@@ -1528,7 +1533,7 @@
     }
 
     // =========================================================================
-    // КЭШИРОВАНИЕ ВИДЕО В BLOB (БЕЗ ЧЁРНОГО ЭКРАНА И ЗАВИСАНИЙ НА ПОВТОРЕ)
+    // БЕСШОВНЫЙ CANVAS-ПЛЕЕР ДЛЯ КРУЖОЧКОВ (БЕЗ ЧЁРНОГО/СЕРОГО ЭКРАНА И ЗАВИСАНИЙ)
     // =========================================================================
     async function getCachedVideoUrl(originalUrl) {
       if (!originalUrl) return '';
@@ -1547,50 +1552,154 @@
       }
     }
 
-    function setupSeamlessAutoplayVideo(videoEl, originalUrl) {
-      videoEl.muted = true;
-      videoEl.defaultMuted = true;
-      videoEl.loop = true;
-      videoEl.autoplay = true;
-      videoEl.playsInline = true;
-      videoEl.setAttribute('muted', '');
-      videoEl.setAttribute('loop', '');
-      videoEl.setAttribute('autoplay', '');
-      videoEl.setAttribute('playsinline', '');
-      videoEl.setAttribute('webkit-playsinline', '');
+    function createCanvasVideoPlayer(originalUrl, canvasEl, withSound = false, onNeedUnmute = null) {
+      const ctx = canvasEl.getContext('2d', { alpha: false });
+      const pool = document.getElementById('video-decoder-pool');
 
-      const markReady = () => {
-        videoEl.classList.add('ready');
-        const loader = videoEl.parentElement && videoEl.parentElement.querySelector('.circle-loader');
-        if (loader) loader.remove();
-        videoEl.play().catch(() => {});
-      };
+      const video = document.createElement('video');
+      video.playsInline = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.preload = 'auto';
+      video.crossOrigin = 'anonymous';
+      video.muted = !withSound;
+      video.defaultMuted = !withSound;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      if (!withSound) video.setAttribute('muted', '');
 
-      videoEl.addEventListener('loadeddata', markReady, { once: true });
-      videoEl.addEventListener('canplay', markReady, { once: true });
+      pool.appendChild(video);
 
-      // Страховка на повтор, если браузер игнорирует атрибут loop
-      videoEl.addEventListener('ended', () => {
-        videoEl.currentTime = 0.01;
-        videoEl.play().catch(() => {});
-      });
+      let activeSrc = '';
+      let hasDrawnFirstFrame = false;
+      let lastTime = -1;
+      let stallTicks = 0;
+      let restarting = false;
+      let destroyed = false;
 
-      // Сначала запускаем прямой поток с #t=0.05, параллельно качаем в RAM Blob
-      videoEl.src = originalUrl.includes('#t=') ? originalUrl : `${originalUrl}#t=0.05`;
-      videoEl.play().catch(() => {});
+      // Рисуем яркий пульсирующий плейсхолдер до первого кадра (вместо чёрного круга)
+      function drawLoadingPlaceholder(now) {
+        const w = canvasEl.width;
+        const h = canvasEl.height;
+        const pulse = 0.5 + 0.5 * Math.sin(now * 0.005);
 
-      getCachedVideoUrl(originalUrl).then((cachedUrl) => {
-        if (cachedUrl && cachedUrl.startsWith('blob:') && videoEl.isConnected && videoEl.src !== cachedUrl) {
-          const cur = videoEl.currentTime || 0.01;
-          videoEl.src = cachedUrl;
-          videoEl.currentTime = cur;
-          videoEl.play().catch(() => {});
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#2a1659');
+        grad.addColorStop(0.5, pulse > 0.5 ? '#5b1e7a' : '#183d66');
+        grad.addColorStop(1, '#0f294a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Вращающаяся дуга загрузки
+        ctx.save();
+        ctx.translate(w / 2, h / 2);
+        ctx.rotate(now * 0.004);
+        ctx.strokeStyle = 'rgba(0, 229, 255, 0.85)';
+        ctx.lineWidth = Math.max(4, w * 0.025);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(0, 0, w * 0.14, 0, Math.PI * 1.4);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Жёсткий перезапуск цикла без очистки canvas (убирает серый/чёрный экран при повторе)
+      function restartLoop() {
+        if (restarting || destroyed || !activeSrc) return;
+        restarting = true;
+        stallTicks = 0;
+
+        try {
+          video.currentTime = 0;
+          const p = video.play();
+          if (p && typeof p.catch === 'function') p.catch(() => {});
+        } catch {}
+
+        // Если браузер не смог перемотать unindexed WebM через currentTime = 0, перезапускаем src
+        setTimeout(() => {
+          if (destroyed) return;
+          if (video.paused || video.ended || (Number.isFinite(video.duration) && video.duration > 0.3 && video.currentTime >= video.duration - 0.12)) {
+            video.src = activeSrc;
+            video.load();
+            video.play().catch(() => {});
+          }
+          restarting = false;
+        }, 160);
+      }
+
+      video.addEventListener('ended', restartLoop);
+
+      // Загружаем видео в локальный Blob и запускаем
+      getCachedVideoUrl(originalUrl).then((resolvedUrl) => {
+        if (destroyed) return;
+        activeSrc = resolvedUrl || originalUrl;
+        video.src = activeSrc;
+        video.load();
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch(() => {
+            if (withSound) {
+              video.muted = true;
+              video.play().catch(() => {});
+              if (typeof onNeedUnmute === 'function') onNeedUnmute();
+            }
+          });
         }
       });
+
+      return {
+        video,
+        render(now) {
+          if (destroyed) return;
+
+          const canDraw = video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0 && !video.seeking;
+
+          if (canDraw) {
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            const side = Math.min(vw, vh);
+            const sx = (vw - side) / 2;
+            const sy = (vh - side) / 2;
+            ctx.drawImage(video, sx, sy, side, side, 0, 0, canvasEl.width, canvasEl.height);
+            hasDrawnFirstFrame = true;
+          } else if (!hasDrawnFirstFrame) {
+            drawLoadingPlaceholder(now);
+          }
+
+          // Сторож повтора: ловит окончание видео или зависание в конце WebM-потока
+          if (hasDrawnFirstFrame && !restarting) {
+            const dur = video.duration;
+            if (video.ended || (Number.isFinite(dur) && dur > 0.25 && video.currentTime >= dur - 0.08)) {
+              restartLoop();
+            } else if (Math.abs(video.currentTime - lastTime) < 0.001) {
+              stallTicks++;
+              if (stallTicks > 35) {
+                restartLoop();
+              }
+            } else {
+              stallTicks = 0;
+            }
+            lastTime = video.currentTime;
+          }
+        },
+        unmute() {
+          video.muted = false;
+          video.play().catch(() => {});
+        },
+        destroy() {
+          destroyed = true;
+          try {
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+            video.remove();
+          } catch {}
+        }
+      };
     }
 
     // =========================================================================
-    // ГЛАВНЫЙ ЭКРАН ПРОЕКТОРА + ФИЗИКА СТОЛКНОВЕНИЙ (HOST)
+    // ГЛАВНЫЙ ЭКРАН ПРОЕКТОРА + ФИЗИКА СТОЛКНОВЕНИЙ И ПЕРЕТАСКИВАНИЕ (HOST)
     // =========================================================================
     function initHost() {
       document.body.classList.add('host-mode');
@@ -1654,6 +1763,52 @@
         }
       });
 
+      // Глобальное перетаскивание мышью и пальцем (не срывается при движении)
+      window.addEventListener('pointermove', (e) => {
+        if (!activeDrag) return;
+        const b = activeDrag.body;
+        const distFromDown = Math.hypot(e.clientX - activeDrag.downX, e.clientY - activeDrag.downY);
+        if (distFromDown > 6) {
+          activeDrag.moved = true;
+        }
+
+        const headerHeight = document.getElementById('host-header').offsetHeight || 80;
+        const rawX = e.clientX - activeDrag.offsetX;
+        const rawY = e.clientY - activeDrag.offsetY;
+
+        const targetX = Math.max(b.radius + 8, Math.min(window.innerWidth - b.radius - 8, rawX));
+        const targetY = Math.max(headerHeight + b.radius + 8, Math.min(window.innerHeight - b.radius - 8, rawY));
+
+        b.vx = (targetX - b.x) * 26;
+        b.vy = (targetY - b.y) * 26;
+        b.x = targetX;
+        b.y = targetY;
+      });
+
+      const finishGlobalDrag = () => {
+        if (!activeDrag) return;
+        const { body, moved } = activeDrag;
+        activeDrag = null;
+
+        body.isDragging = false;
+        body.el.classList.remove('dragging');
+
+        const maxThrow = 1350;
+        const spd = Math.hypot(body.vx, body.vy);
+        if (spd > maxThrow) {
+          body.vx = (body.vx / spd) * maxThrow;
+          body.vy = (body.vy / spd) * maxThrow;
+        }
+
+        if (!moved) {
+          openSpotlightById(body.id, false);
+        }
+      };
+
+      window.addEventListener('pointerup', finishGlobalDrag);
+      window.addEventListener('pointercancel', finishGlobalDrag);
+      window.addEventListener('resize', updateAllRadii);
+
       document.addEventListener('keydown', (e) => {
         if (document.activeElement.isContentEditable) return;
         if (e.key === 'Escape') {
@@ -1669,17 +1824,8 @@
         }
       });
 
-      // Запуск физического движка (60 FPS)
-      requestAnimationFrame(physicsLoop);
-
-      // Сторож автоплея: следит, чтобы ни один кружочек не встал на паузу
-      setInterval(() => {
-        document.querySelectorAll('#physics-arena video').forEach((v) => {
-          if (v.paused && v.readyState >= 2) {
-            v.play().catch(() => {});
-          }
-        });
-      }, 2500);
+      // Единый цикл 60 FPS: физика столкновений + отрисовка видео на canvas
+      requestAnimationFrame(mainRenderAndPhysicsLoop);
 
       if (!initSupabase()) return;
 
@@ -1691,7 +1837,7 @@
     function getBubbleRadius() {
       const count = physBodies.length;
       const minSide = Math.min(window.innerWidth, window.innerHeight);
-      let base = Math.max(95, Math.min(132, minSide * 0.145));
+      let base = Math.max(95, Math.min(134, minSide * 0.148));
       if (count > 12) base *= 0.86;
       if (count > 22) base *= 0.78;
       return Math.round(base);
@@ -1710,15 +1856,15 @@
 
     function createPhysicsBody(item, isNewArrival = false) {
       const arena = document.getElementById('physics-arena');
-      const el = createFeedNode(item);
-      arena.appendChild(el);
+      const { wrap, videoPlayer } = createFeedNode(item);
+      arena.appendChild(wrap);
 
       const headerH = document.getElementById('host-header').offsetHeight || 80;
       const r = getBubbleRadius();
       const size = r * 2;
-      el.style.width = `${size}px`;
-      el.style.height = `${size}px`;
-      el.style.zIndex = String(++zIndexCounter);
+      wrap.style.width = `${size}px`;
+      wrap.style.height = `${size}px`;
+      wrap.style.zIndex = String(++zIndexCounter);
 
       const minX = r + 24;
       const maxX = Math.max(minX + 10, window.innerWidth - r - 24);
@@ -1733,79 +1879,43 @@
         : minY + Math.random() * (maxY - minY);
 
       const angle = Math.random() * Math.PI * 2;
-      const speed = isNewArrival ? 220 : 45 + Math.random() * 45;
+      const speed = isNewArrival ? 230 : 48 + Math.random() * 45;
 
       const body = {
         id: item.id,
         item: item,
-        el: el,
+        el: wrap,
+        videoPlayer: videoPlayer,
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         radius: r,
         mass: r * r,
-        isDragging: false,
-        lastX: x,
-        lastY: y,
-        downX: 0,
-        downY: 0,
-        downTime: 0
+        isDragging: false
       };
 
-      // Перетаскивание и бросок мышкой / тачем
-      el.addEventListener('pointerdown', (e) => {
+      wrap.addEventListener('pointerdown', (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
         if (e.target.closest('.delete-item-btn')) return;
         e.preventDefault();
+
         body.isDragging = true;
         body.el.classList.add('dragging');
         body.el.style.zIndex = String(++zIndexCounter);
         body.vx = 0;
         body.vy = 0;
-        body.downX = e.clientX;
-        body.downY = e.clientY;
-        body.lastX = body.x;
-        body.lastY = body.y;
-        body.downTime = performance.now();
-        el.setPointerCapture(e.pointerId);
+
+        activeDrag = {
+          body: body,
+          offsetX: e.clientX - body.x,
+          offsetY: e.clientY - body.y,
+          downX: e.clientX,
+          downY: e.clientY,
+          downTime: performance.now(),
+          moved: false
+        };
       });
-
-      el.addEventListener('pointermove', (e) => {
-        if (!body.isDragging) return;
-        const headerHeight = document.getElementById('host-header').offsetHeight || 80;
-        const targetX = Math.max(body.radius + 8, Math.min(window.innerWidth - body.radius - 8, e.clientX));
-        const targetY = Math.max(headerHeight + body.radius + 8, Math.min(window.innerHeight - body.radius - 8, e.clientY));
-
-        // Мгновенная скорость броска
-        body.vx = (targetX - body.x) * 28;
-        body.vy = (targetY - body.y) * 28;
-        body.x = targetX;
-        body.y = targetY;
-      });
-
-      const endDrag = (e) => {
-        if (!body.isDragging) return;
-        body.isDragging = false;
-        body.el.classList.remove('dragging');
-        try { el.releasePointerCapture(e.pointerId); } catch {}
-
-        // Ограничиваем максимальную скорость после броска
-        const maxThrow = 1300;
-        const spd = Math.hypot(body.vx, body.vy);
-        if (spd > maxThrow) {
-          body.vx = (body.vx / spd) * maxThrow;
-          body.vy = (body.vy / spd) * maxThrow;
-        }
-
-        const moved = Math.hypot(e.clientX - body.downX, e.clientY - body.downY);
-        const dt = performance.now() - body.downTime;
-        if (moved < 10 && dt < 320) {
-          openSpotlightById(body.id, false);
-        }
-      };
-
-      el.addEventListener('pointerup', endDrag);
-      el.addEventListener('pointercancel', endDrag);
 
       physBodies.push(body);
       updateAllRadii();
@@ -1817,7 +1927,7 @@
 
     let lastPhysicsTime = performance.now();
 
-    function physicsLoop(now) {
+    function mainRenderAndPhysicsLoop(now) {
       const dt = Math.min(0.033, (now - lastPhysicsTime) / 1000);
       lastPhysicsTime = now;
 
@@ -1828,26 +1938,29 @@
       const minY = headerH + 8;
       const maxY = window.innerHeight - pad;
 
-      // 1. Интеграция позиций и лёгкий фоновый дрейф
+      // 1. Движение тел и отрисовка видео-кадров на canvas
       for (let i = 0; i < physBodies.length; i++) {
         const b = physBodies[i];
+
+        if (b.videoPlayer) {
+          b.videoPlayer.render(now);
+        }
+
         if (b.isDragging) continue;
 
         b.x += b.vx * dt;
         b.y += b.vy * dt;
 
-        // Плавное торможение быстрых бросков + поддержание лёгкого парения
         const speed = Math.hypot(b.vx, b.vy);
         if (speed > 75) {
           b.vx *= Math.pow(0.45, dt);
           b.vy *= Math.pow(0.45, dt);
-        } else if (speed < 28) {
+        } else if (speed < 30) {
           const nudgeAngle = Math.random() * Math.PI * 2;
-          b.vx += Math.cos(nudgeAngle) * 18 * dt;
-          b.vy += Math.sin(nudgeAngle) * 18 * dt;
+          b.vx += Math.cos(nudgeAngle) * 20 * dt;
+          b.vy += Math.sin(nudgeAngle) * 20 * dt;
         }
 
-        // Отскоки от стен
         if (b.x - b.radius < minX) {
           b.x = minX + b.radius;
           b.vx = Math.abs(b.vx) * 0.88;
@@ -1865,7 +1978,7 @@
         }
       }
 
-      // 2. Упругие столкновения между кружочками
+      // 2. Упругие столкновения между шарами
       for (let i = 0; i < physBodies.length; i++) {
         for (let j = i + 1; j < physBodies.length; j++) {
           const a = physBodies[i];
@@ -1886,7 +1999,6 @@
             const ny = dy / dist;
             const overlap = minDist - dist;
 
-            // Разводим перекрытие
             if (a.isDragging && !b.isDragging) {
               b.x += nx * overlap;
               b.y += ny * overlap;
@@ -1900,13 +2012,12 @@
               b.y += ny * overlap * 0.5;
             }
 
-            // Импульс упругого столкновения
             const rvx = b.vx - a.vx;
             const rvy = b.vy - a.vy;
             const velAlongNormal = rvx * nx + rvy * ny;
 
             if (velAlongNormal < 0) {
-              const restitution = 0.9;
+              const restitution = 0.92;
               const invMassA = a.isDragging ? 0 : 1 / a.mass;
               const invMassB = b.isDragging ? 0 : 1 / b.mass;
               const invMassSum = invMassA + invMassB;
@@ -1928,7 +2039,7 @@
         }
       }
 
-      // 3. Отрисовка через GPU transform: translate3d
+      // 3. Позиционирование на экране
       for (let i = 0; i < physBodies.length; i++) {
         const b = physBodies[i];
         const tx = b.x - b.radius;
@@ -1936,7 +2047,12 @@
         b.el.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0)`;
       }
 
-      requestAnimationFrame(physicsLoop);
+      // 4. Отрисовка увеличенного кружка в Spotlight (если открыт)
+      if (activeSpotlightVideoPlayer) {
+        activeSpotlightVideoPlayer.render(now);
+      }
+
+      requestAnimationFrame(mainRenderAndPhysicsLoop);
     }
 
     function shakeAllBubbles() {
@@ -2051,7 +2167,6 @@
           })
           .subscribe();
 
-        // Канал живых реакций со смартфонов
         sb.channel('corp-reactions')
           .on('broadcast', { event: 'reaction' }, (payload) => {
             if (payload && payload.payload && payload.payload.emoji) {
@@ -2084,7 +2199,10 @@
       const bIdx = physBodies.findIndex(b => String(b.id) === String(id));
       if (bIdx !== -1) {
         const [body] = physBodies.splice(bIdx, 1);
-        if (body && body.el) body.el.remove();
+        if (body) {
+          if (body.videoPlayer) body.videoPlayer.destroy();
+          if (body.el) body.el.remove();
+        }
         updateAllRadii();
       }
 
@@ -2118,21 +2236,22 @@
       wrap.className = 'phys-body';
       wrap.dataset.itemId = item.id;
 
+      let videoPlayer = null;
+
       if (item.type === 'video' && item.video_url) {
         wrap.innerHTML = `
           <button class="delete-item-btn" title="Удалить">×</button>
           <div class="circle-ring">
             <div class="circle-mask">
-              <div class="circle-loader">✨</div>
-              <video></video>
+              <canvas class="circle-canvas" width="280" height="280"></canvas>
               <div class="circle-sound-hint">🔊 Клик — звук</div>
             </div>
           </div>
           <div class="author-pill">${author}</div>
         `;
 
-        const vid = wrap.querySelector('video');
-        setupSeamlessAutoplayVideo(vid, item.video_url);
+        const canvasEl = wrap.querySelector('canvas');
+        videoPlayer = createCanvasVideoPlayer(item.video_url, canvasEl, false);
       } else {
         wrap.innerHTML = `
           <button class="delete-item-btn" title="Удалить">×</button>
@@ -2148,7 +2267,7 @@
         deleteSingleItem(item);
       });
 
-      return wrap;
+      return { wrap, videoPlayer };
     }
 
     function openSpotlightById(id, isWinner = false) {
@@ -2159,7 +2278,12 @@
       document.getElementById('spotlight-modal').classList.remove('hidden');
     }
 
-    async function renderSpotlight(isWinner = false) {
+    function renderSpotlight(isWinner = false) {
+      if (activeSpotlightVideoPlayer) {
+        activeSpotlightVideoPlayer.destroy();
+        activeSpotlightVideoPlayer = null;
+      }
+
       const item = feedItems[currentSpotlightIndex];
       if (!item) return;
 
@@ -2178,35 +2302,23 @@
         const mask = document.createElement('div');
         mask.className = 'spotlight-circle-mask';
 
-        const video = document.createElement('video');
-        video.autoplay = true;
-        video.loop = true;
-        video.playsInline = true;
-        video.setAttribute('playsinline', '');
-        video.setAttribute('loop', '');
-        video.muted = false;
+        const canvas = document.createElement('canvas');
+        canvas.className = 'spotlight-canvas';
+        canvas.width = 520;
+        canvas.height = 520;
 
-        const srcUrl = await getCachedVideoUrl(item.video_url);
-        video.src = srcUrl || item.video_url;
-
-        video.addEventListener('ended', () => {
-          video.currentTime = 0.01;
-          video.play().catch(() => {});
-        });
-
-        mask.appendChild(video);
+        mask.appendChild(canvas);
         ring.appendChild(mask);
         content.appendChild(ring);
 
-        video.play().catch(() => {
-          video.muted = true;
+        activeSpotlightVideoPlayer = createCanvasVideoPlayer(item.video_url, canvas, true, () => {
           unmuteBtn.classList.remove('hidden');
-          video.play().catch(() => {});
         });
 
         unmuteBtn.onclick = () => {
-          video.muted = false;
-          video.play().catch(() => {});
+          if (activeSpotlightVideoPlayer) {
+            activeSpotlightVideoPlayer.unmute();
+          }
           unmuteBtn.classList.add('hidden');
         };
       } else {
@@ -2224,6 +2336,10 @@
     }
 
     function closeSpotlight() {
+      if (activeSpotlightVideoPlayer) {
+        activeSpotlightVideoPlayer.destroy();
+        activeSpotlightVideoPlayer = null;
+      }
       document.getElementById('spotlight-modal').classList.add('hidden');
       document.getElementById('spotlight-content').innerHTML = '';
       currentSpotlightIndex = -1;
@@ -2272,7 +2388,10 @@
         if (error) throw error;
 
         feedItems = [];
-        physBodies.forEach(b => b.el.remove());
+        physBodies.forEach(b => {
+          if (b.videoPlayer) b.videoPlayer.destroy();
+          b.el.remove();
+        });
         physBodies = [];
         closeSpotlight();
         syncHostLayout();
@@ -2338,7 +2457,6 @@
         });
       });
 
-      // Кнопки живых реакций на проектор
       document.querySelectorAll('.react-send-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const emoji = btn.dataset.react;
